@@ -1,0 +1,6 @@
+#requires -Version 5.1
+<# Created by Dewald Pretorius #>
+param([string]$OutputPath)
+if(-not $OutputPath){$OutputPath="$([Environment]::GetFolderPath('Desktop'))\Windows_App_Remote_Reports"};New-Item $OutputPath -ItemType Directory -Force|Out-Null
+$app=Get-AppxPackage '*WindowsApp*' -ErrorAction SilentlyContinue;$targets='rdweb.wvd.microsoft.com','login.microsoftonline.com','management.azure.com';$net=foreach($t in $targets){[pscustomobject]@{Target=$t;DNS=[bool](Resolve-DnsName $t -ErrorAction SilentlyContinue);HTTPS443=(Test-NetConnection $t -Port 443 -InformationLevel Quiet -WarningAction SilentlyContinue)}}
+@('MICROSOFT WINDOWS APP REMOTE CONNECTION TROUBLESHOOTER','Created by Dewald Pretorius',"Generated: $(Get-Date)",($app|Select-Object Name,Version,Status,InstallLocation|Format-List|Out-String -Width 220),($net|Format-Table -AutoSize|Out-String -Width 220),'Guidance: verify workspace subscription, account, Conditional Access, feed URL, gateway reachability, client version, display settings, and session permissions.')|Set-Content (Join-Path $OutputPath 'Report.txt') -Encoding UTF8
